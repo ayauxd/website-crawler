@@ -1,0 +1,11 @@
+requests>=2.31.0
+beautifulsoup4>=4.12.2
+playwright>=1.39.0
+markdownify>=0.11.6
+tqdm>=4.66.1
+pytest>=7.4.3
+aiohttp>=3.8.6
+validators>=0.22.0
+pillow>=10.1.0
+python-dotenv>=1.0.0
+lxml>=4.9.3

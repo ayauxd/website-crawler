@@ -1,0 +1,23 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*.class
+
+# Virtual environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# Project specific output directories
+mac_template_output/
+teller_output/
+output/
+*.DS_Store
+
+# Editor directories and files
+.idea/
+.vscode/
+*.swp
+*.swo
