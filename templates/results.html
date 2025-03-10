@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cut n Sew - Crawl Results</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Special+Elite&display=swap" rel="stylesheet">
+    <style>
+        /* Retro Typewriter Theme */
+        body {
+            font-family: 'Special Elite', cursive;
+            background-color: #f8f3e6;
+            color: #3a3a3a;
+            line-height: 1.6;
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            background-image: url('data:image/png;base64,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');
+        }
+
+        .typewriter-container {
+            background-color: #fff8ee;
+            border: 1px solid #d3c7b1;
+            border-radius: 5px;
+            padding: 40px;
+            margin: 20px 0;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .typewriter-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background-color: #d3c7b1;
+            border-radius: 5px 5px 0 0;
+        }
+
+        h1, h2, h3 {
+            color: #5c3a21;
+            text-align: center;
+            letter-spacing: -0.5px;
+        }
+
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 1px 1px 0 #d3c7b1;
+        }
+
+        .subtitle {
+            font-style: italic;
+            text-align: center;
+            color: #8a7560;
+            margin-top: 0;
+            margin-bottom: 30px;
+        }
+
+        .btn {
+            font-family: 'Special Elite', cursive;
+            background-color: #5c3a21;
+            color: #fff8ee;
+            border: none;
+            padding: 12px 25px;
+            margin: 10px 5px;
+            cursor: pointer;
+            font-size: 16px;
+            border-radius: 3px;
+            transition: all 0.3s;
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .btn:hover {
+            background-color: #412a18;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            margin: 25px 0;
+        }
+
+        .stats-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .stat-card {
+            background-color: #fff;
+            border: 1px solid #d3c7b1;
+            padding: 15px;
+            border-radius: 3px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .stat-title {
+            font-size: 0.9em;
+            color: #8a7560;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 1.8em;
+            color: #5c3a21;
+            font-weight: bold;
+        }
+
+        .resource-list {
+            list-style-type: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .resource-list li {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-bottom: 1px dashed #d3c7b1;
+        }
+
+        .resource-list li:last-child {
+            border-bottom: none;
+        }
+
+        .resource-list a {
+            color: #5c3a21;
+            text-decoration: none;
+            transition: all 0.2s;
+            display: block;
+        }
+
+        .resource-list a:hover {
+            color: #8a7560;
+            padding-left: 5px;
+        }
+
+        .tabbed-container {
+            margin-top: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #d3c7b1;
+        }
+
+        .tab {
+            padding: 10px 20px;
+            cursor: pointer;
+            background-color: #f0e6d6;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+            border: 1px solid #d3c7b1;
+            border-bottom: none;
+        }
+
+        .tab.active {
+            background-color: #fff;
+            border-bottom: 1px solid #fff;
+            margin-bottom: -1px;
+        }
+
+        .tab-content {
+            display: none;
+            padding: 20px;
+            background-color: #fff;
+            border: 1px solid #d3c7b1;
+            border-top: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .resource-image {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+            border: 1px solid #d3c7b1;
+        }
+
+        .breadcrumb {
+            margin-bottom: 20px;
+            padding: 10px;
+            background-color: #f0e6d6;
+            border-radius: 3px;
+        }
+
+        .breadcrumb a {
+            color: #5c3a21;
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        .page-footer {
+            text-align: center;
+            margin-top: 40px;
+            font-size: 0.9em;
+            color: #8a7560;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 30px;
+            background-color: #f0e6d6;
+            border-radius: 3px;
+            margin: 20px 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background-color: #5c3a21;
+            width: 0;
+            transition: width 0.5s;
+            text-align: center;
+            color: #fff;
+            line-height: 30px;
+        }
+
+        .view-iframe {
+            width: 100%;
+            min-height: 500px;
+            border: 1px solid #d3c7b1;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="typewriter-container">
+        <h1>Cut n Sew Web Crawler</h1>
+        <p class="subtitle">Crawl results for {{ url }}</p>
+        
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; Crawl Results
+        </div>
+        
+        {% if status == 'running' %}
+        <div class="progress-container">
+            <div class="progress-bar" id="progressBar" style="width: {{ progress }}%;">{{ progress }}%</div>
+        </div>
+        <p class="subtitle">Crawling in progress... {{ pages_completed }} of {{ total_pages }} pages completed</p>
+        {% endif %}
+        
+        <div class="stats-container">
+            <div class="stat-card">
+                <div class="stat-title">Pages Crawled</div>
+                <div class="stat-value">{{ stats.pages_crawled }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">HTML Files</div>
+                <div class="stat-value">{{ stats.html_files }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">CSS Files</div>
+                <div class="stat-value">{{ stats.css_files }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">JavaScript Files</div>
+                <div class="stat-value">{{ stats.js_files }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Images</div>
+                <div class="stat-value">{{ stats.images }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Fonts</div>
+                <div class="stat-value">{{ stats.fonts }}</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Total Size</div>
+                <div class="stat-value">{{ stats.total_size_kb }} KB</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">Crawl Time</div>
+                <div class="stat-value">{{ stats.crawl_time }}s</div>
+            </div>
+        </div>
+        
+        <div class="btn-group">
+            <a href="/view/{{ crawl_id }}" class="btn">View Crawled Site</a>
+            <a href="/download/{{ crawl_id }}" class="btn">Download Archive</a>
+            <a href="/" class="btn" style="background-color: #8a7560;">Start New Crawl</a>
+        </div>
+        
+        <div class="tabbed-container">
+            <div class="tabs">
+                <div class="tab active" onclick="openTab(event, 'pages')">Pages</div>
+                <div class="tab" onclick="openTab(event, 'images')">Images</div>
+                <div class="tab" onclick="openTab(event, 'css')">CSS</div>
+                <div class="tab" onclick="openTab(event, 'js')">JavaScript</div>
+                <div class="tab" onclick="openTab(event, 'fonts')">Fonts</div>
+            </div>
+            
+            <div id="pages" class="tab-content active">
+                <h3>HTML Pages ({{ stats.html_files }})</h3>
+                <ul class="resource-list">
+                    {% for page in pages %}
+                    <li>
+                        <a href="/view/{{ crawl_id }}/{{ page.path }}" target="_blank">
+                            {{ page.url }} <span style="color: #8a7560;">({{ page.size_kb }} KB)</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li>No pages crawled yet.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <div id="images" class="tab-content">
+                <h3>Images ({{ stats.images }})</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px;">
+                    {% for image in images %}
+                    <div style="text-align: center;">
+                        <a href="/view/{{ crawl_id }}/images/{{ image.filename }}" target="_blank">
+                            <img src="/view/{{ crawl_id }}/images/{{ image.filename }}" alt="{{ image.filename }}" class="resource-image">
+                        </a>
+                        <div style="font-size: 0.8em; color: #8a7560;">{{ image.size_kb }} KB</div>
+                    </div>
+                    {% else %}
+                    <p>No images found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+            
+            <div id="css" class="tab-content">
+                <h3>CSS Files ({{ stats.css_files }})</h3>
+                <ul class="resource-list">
+                    {% for css in css_files %}
+                    <li>
+                        <a href="/view/{{ crawl_id }}/css/{{ css.filename }}" target="_blank">
+                            {{ css.url }} <span style="color: #8a7560;">({{ css.size_kb }} KB)</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li>No CSS files found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <div id="js" class="tab-content">
+                <h3>JavaScript Files ({{ stats.js_files }})</h3>
+                <ul class="resource-list">
+                    {% for js in js_files %}
+                    <li>
+                        <a href="/view/{{ crawl_id }}/js/{{ js.filename }}" target="_blank">
+                            {{ js.url }} <span style="color: #8a7560;">({{ js.size_kb }} KB)</span>
+                        </a>
+                    </li>
+                    {% else %}
+                    <li>No JavaScript files found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <div id="fonts" class="tab-content">
+                <h3>Font Files ({{ stats.fonts }})</h3>
+                <ul class="resource-list">
+                    {% for font in fonts %}
+                    <li>
+                        {{ font.url }} <span style="color: #8a7560;">({{ font.size_kb }} KB)</span>
+                    </li>
+                    {% else %}
+                    <li>No font files found.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <footer class="page-footer">
+        <p>Cut n Sew Web Crawler &copy; 2025 | Crafted with ❤️ for web preservation</p>
+    </footer>
+
+    <script>
+        function openTab(evt, tabName) {
+            // Hide all tab content
+            var tabcontent = document.getElementsByClassName("tab-content");
+            for (var i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].className = tabcontent[i].className.replace(" active", "");
+            }
+            
+            // Remove active class from all tabs
+            var tabs = document.getElementsByClassName("tab");
+            for (var i = 0; i < tabs.length; i++) {
+                tabs[i].className = tabs[i].className.replace(" active", "");
+            }
+            
+            // Show the specific tab content
+            document.getElementById(tabName).className += " active";
+            
+            // Add an active class to the button that opened the tab
+            evt.currentTarget.className += " active";
+        }
+        
+        {% if status == 'running' %}
+        // Auto-refresh for running crawls
+        setTimeout(function() {
+            window.location.reload();
+        }, 5000);
+        {% endif %}
+    </script>
+</body>
+</html> 

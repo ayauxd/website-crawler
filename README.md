@@ -1,138 +1,172 @@
-# Cut n Sew Web Crawler
+# Crawlr - Web Archive Tool
 
-![Cut n Sew Web Crawler Logo](static/images/logo.png)
+Crawlr is a vintage-inspired web archiving tool that captures and preserves websites for offline viewing, analysis, and development. Its serverless-friendly architecture allows you to crawl websites and collect their HTML, CSS, JavaScript, images, and fonts in an organized and accessible format.
 
-A stylish, retro-themed web crawler that captures complete websites with all resources for offline viewing.
+![Crawlr Screenshot](https://example.com/screenshot.png) <!-- Add a screenshot if available -->
 
 ## Features
 
-- 🕸️ Complete website crawling with depth and page limits
-- 📄 HTML content preservation with proper structure
-- 🎨 CSS stylesheets and designs capture
-- 📜 JavaScript functionality preservation
-- 🔤 Font files extraction and downloading
-- 🖼️ Images and media files acquisition
-- 👀 Interactive browsing interface with typewriter aesthetics
-- 📊 Resource statistics and metrics
-- 📦 Downloadable archives of crawled sites
+- **Complete Website Archiving**: Crawls entire websites, capturing HTML, CSS, JavaScript, images, and fonts
+- **Serverless Architecture**: Works within serverless platforms' constraints by processing sites in small batches
+- **Retro Interface**: Easy-to-use interface with vintage typewriter aesthetics
+- **Organized Output**: Creates a structured archive of web resources for easy browsing and reuse
+- **Developer-Friendly**: Perfect for studying website designs, creating templates, or preserving online content
 
-## Getting Started
+## Using Archived Files in Your IDE
 
-### Prerequisites
+After crawling a website, you can use the archived files in your development environment:
 
-- Python 3.8 or higher
-- pip (Python package manager)
-- Git (optional)
+1. Browse to the completed archive in the Crawlr interface
+2. Click on any file (HTML, CSS, JS, etc.) to view its contents
+3. Copy the code directly or use the download options
+4. Import into your IDE maintaining the same folder structure:
+   - `html/` directory contains the HTML files
+   - `css/` directory contains the stylesheets
+   - `js/` directory contains JavaScript files
+   - `images/` and `fonts/` contain media resources
 
-### Installation
+This makes it easy to:
+- Study how websites are built
+- Create templates based on existing designs
+- Modify and extend websites for your own projects
+- Preserve content that might change or disappear
 
-1. Clone the repository (or download it)
+## Deployment to Vercel
 
-```bash
-git clone https://github.com/ayauxd/website-crawler.git
-cd website-crawler
-```
-
-2. Create a virtual environment
-
-```bash
-python -m venv .venv
-```
-
-3. Activate the virtual environment
-
-On Windows:
-```bash
-.venv\Scripts\activate
-```
-
-On macOS/Linux:
-```bash
-source .venv/bin/activate
-```
-
-4. Install dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### Running the Application
-
-1. Start the application:
-
-```bash
-python web_interface_retro.py
-```
-
-2. Open your browser and navigate to:
-
-```
-http://localhost:5050
-```
-
-3. Enter the URL of a website you want to crawl, set your options, and click "Start Crawling"
-
-## Deployment on Vercel
-
-This application can be deployed to Vercel with minimal configuration.
+### Quick Deployment
 
 1. Install Vercel CLI:
-
-```bash
-npm install -g vercel
-```
+   ```
+   npm install -g vercel
+   ```
 
 2. Login to Vercel:
-
-```bash
-vercel login
-```
+   ```
+   vercel login
+   ```
 
 3. Deploy the application:
+   ```
+   vercel
+   ```
 
-```bash
-vercel
+4. Follow the prompts:
+   - Set up and deploy: Yes
+   - Which scope: Select your personal account
+   - Link to existing project: No
+   - Project name: crawlr (or your preferred name)
+   - Directory: ./ (current directory)
+   - Override settings: No
+
+### Troubleshooting Vercel Deployment
+
+If you encounter a 500 error with `FUNCTION_INVOCATION_FAILED`, check the following:
+
+1. **Proper Handler**: Make sure `index.py` exists with a `handler` function that imports the Flask app.
+2. **Vercel Configuration**: Check `vercel.json` to ensure it points to `index.py` as the source file.
+3. **Environment Variables**: Make sure OUTPUT_DIR is set to `/tmp/crawler_output` in Vercel environment.
+4. **Dependencies**: Ensure all required packages are in `requirements.txt` with specific versions.
+
+## Project Structure
+
+```
+├── index.py               # Vercel entry point
+├── serverless_crawler.py  # Core crawler implementation
+├── serverless_api.py      # Flask API for web interface
+├── static/                # Static assets
+│   └── css/
+│       └── retro.css      # Retro styling for the interface
+├── templates/             # HTML templates
+│   ├── index.html         # Main interface template
+│   ├── archive.html       # Archive viewer template
+│   └── error.html         # Error page template
+├── vercel.json            # Vercel deployment configuration
+└── requirements.txt       # Project dependencies
 ```
 
-4. For production deployment:
+## Local Development
 
-```bash
-vercel --prod
-```
+1. Clone the repository:
+   ```
+   git clone https://github.com/yourusername/crawlr.git
+   cd crawlr
+   ```
+
+2. Create a virtual environment and install dependencies:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   ```
+
+3. Run the application:
+   ```
+   python serverless_api.py
+   ```
+
+4. Open your browser and navigate to `http://127.0.0.1:5050` to access the interface.
 
 ## How It Works
 
-Cut n Sew Web Crawler extracts a website's content by:
+The crawler operates with Vercel's serverless architecture limitations in mind:
 
-1. Crawling the site page by page, respecting depth and page limits
-2. Extracting all linked resources (CSS, JavaScript, fonts, images) 
-3. Downloading resources to a local directory structure
-4. Modifying HTML to use local resource paths
-5. Providing a retro typewriter-themed interface to browse the results
+1. **Batched Processing**: Rather than crawling an entire site at once, the crawler processes URLs in small batches (typically 5 at a time) to stay within the 10-second execution limit of Vercel's free tier.
 
-## Use Cases
+2. **State Persistence**: Each job's state is stored in a JSON file, allowing the crawl to resume where it left off when a new request is made.
 
-- 🔄 Website archiving for preservation
-- 🌐 Offline browsing capability
-- 🚚 Website migration assistance
-- 🎓 Web design study and analysis
-- 🧪 Offline testing and site modifications
+3. **Asynchronous Processing**: The crawler uses `aiohttp` and `asyncio` for efficient parallel requests to maximize throughput within time constraints.
 
-## Limitations
+4. **Resource Classification**: Downloaded resources are categorized into HTML, CSS, JavaScript, images, and fonts for organized storage and viewing.
 
-- Some websites block web crawlers through robots.txt
-- JavaScript-rendered content may not be fully captured
-- Dynamic content that loads through APIs may not be preserved
-- CAPTCHAs and login-required sites cannot be fully crawled
-- Very large websites may require significant disk space
+## Important Notes for Vercel
+
+- **10-second Execution Limit**: Vercel's free tier serverless functions have a 10-second execution limit. The crawler is designed to work within this constraint, but larger sites will require multiple "Continue Crawl" requests.
+
+- **Temporary Storage**: Vercel's serverless functions use ephemeral storage. Files stored within the function's environment will persist only for a limited time (typically up to a day) before being cleaned up.
+
+- **Output Directory**: The application uses `/tmp/crawler_output` on Vercel to store crawled content, as specified in the `vercel.json` configuration.
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+This project is open source and available under the MIT License.
 
-## Acknowledgments
+## Responsible Use
 
-- Inspired by the artistry of tailors who craft perfect garments piece by piece
-- Special Elite font by Astigmatic
-- Built with Flask, BeautifulSoup, and Python async capabilities
+Please use Crawlr responsibly:
+- Only crawl websites where you have permission
+- Respect site owners' rights and robots.txt directives
+- Don't overload websites with excessive requests
+- Give proper attribution when using archived content
+
+## Running the Application
+
+### Preferred Method (New Interface)
+To start the application with the new interface design, use the provided startup script:
+
+```bash
+# On Linux/Mac
+./start_app.py
+
+# On Windows
+python start_app.py
+```
+
+This script will:
+1. Stop any running instances of the application
+2. Clear the cache
+3. Start the server with the new interface design
+
+After starting the server, open http://127.0.0.1:5050 in your web browser.
+
+**Important**: If you still see the old interface, perform a hard refresh in your browser:
+- Windows/Linux: Ctrl+F5
+- Mac: Cmd+Shift+R
+
+### Alternative Method
+You can also start the application directly:
+
+```bash
+python serverless_api.py
+```
+
+**Do not use** `web_interface.py` or `web_interface_retro.py` as these contain the old interface design.

@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crawlr - Archive Viewer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
+</head>
+<body>
+    <div class="typewriter-container">
+        <h1 class="typewriter">Crawlr</h1>
+        <p class="subtitle">Archive Viewer</p>
+        
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; Archive: {{ url }}
+        </div>
+        
+        <div class="usage-instructions">
+            <h3>Using These Files in Your IDE</h3>
+            <p>You can copy any of the HTML, CSS, JavaScript or other resources directly into your preferred code editor:</p>
+            <ol>
+                <li>Click on any file in the tabs below to view its contents</li>
+                <li>Use your browser's copy functionality (Ctrl+C/Cmd+C) to copy the code</li>
+                <li>Paste into your IDE or editor</li>
+                <li>Maintain the same folder structure for proper references between files</li>
+            </ol>
+        </div>
+        
+        <div class="archive-info">
+            <h2>Archive Information</h2>
+            <div class="info-grid">
+                <div class="info-card">
+                    <div class="info-label">URL</div>
+                    <div class="info-value">{{ url }}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Date Crawled</div>
+                    <div class="info-value">{{ date }}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Pages Crawled</div>
+                    <div class="info-value">{{ pages_crawled }}</div>
+                </div>
+                <div class="info-card">
+                    <div class="info-label">Links Found</div>
+                    <div class="info-value">{{ links_found }}</div>
+                </div>
+                {% if resource_counts %}
+                <div class="info-card">
+                    <div class="info-label">Resources Downloaded</div>
+                    <div class="info-value">
+                        {% if resource_counts.css > 0 %}CSS: {{ resource_counts.css }}{% endif %}
+                        {% if resource_counts.js > 0 %}{% if resource_counts.css > 0 %}, {% endif %}JS: {{ resource_counts.js }}{% endif %}
+                        {% if resource_counts.images > 0 %}{% if resource_counts.css > 0 or resource_counts.js > 0 %}, {% endif %}Images: {{ resource_counts.images }}{% endif %}
+                        {% if resource_counts.fonts > 0 %}{% if resource_counts.css > 0 or resource_counts.js > 0 or resource_counts.images > 0 %}, {% endif %}Fonts: {{ resource_counts.fonts }}{% endif %}
+                        {% if resource_counts.css == 0 and resource_counts.js == 0 and resource_counts.images == 0 and resource_counts.fonts == 0 %}None{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="tab-container">
+            <div class="tabs">
+                <button class="tab-btn active" onclick="openTab(event, 'htmlTab')">HTML Files</button>
+                <button class="tab-btn" onclick="openTab(event, 'resourcesTab')">Resources</button>
+            </div>
+            
+            <div id="htmlTab" class="tab-content active">
+                <h3>HTML Files</h3>
+                {% if html_files and html_files|length > 0 %}
+                <div class="file-list">
+                    <ul class="resource-list">
+                        {% for file in html_files %}
+                        <li>
+                            <a href="/job/{{ job_id }}/html/{{ file }}" target="_blank">{{ file }}</a>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% else %}
+                <p class="empty-message">No HTML files found in this archive.</p>
+                {% endif %}
+            </div>
+            
+            <div id="resourcesTab" class="tab-content">
+                <h3>Resources</h3>
+                <div class="resource-tabs">
+                    <button class="resource-tab-btn active" onclick="loadResources('css')">CSS ({{ resource_counts.css }})</button>
+                    <button class="resource-tab-btn" onclick="loadResources('js')">JavaScript ({{ resource_counts.js }})</button>
+                    <button class="resource-tab-btn" onclick="loadResources('images')">Images ({{ resource_counts.images }})</button>
+                    <button class="resource-tab-btn" onclick="loadResources('fonts')">Fonts ({{ resource_counts.fonts }})</button>
+                </div>
+                
+                <div id="resourceContent" class="resource-content">
+                    <p>Select a resource type above to view files.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="actions">
+            <a href="/" class="btn btn-secondary">Back to Home</a>
+            <button class="btn" onclick="downloadArchive()">Download Archive</button>
+            <button class="btn btn-danger" onclick="deleteArchive()">Delete Archive</button>
+        </div>
+        
+        <footer class="footer">
+            <p>Crawlr - Web Archive Tool</p>
+            <p><a href="/about">About</a> | <a href="https://github.com/yourusername/crawlr" target="_blank">GitHub</a></p>
+            <p class="disclaimer-footer">For responsible use only. Please respect website owners' rights, robots.txt directives, and rate limits.</p>
+        </footer>
+    </div>
+    
+    <script>
+        // Tab navigation
+        function openTab(evt, tabName) {
+            // Hide all tab content
+            var tabContent = document.getElementsByClassName("tab-content");
+            for (var i = 0; i < tabContent.length; i++) {
+                tabContent[i].classList.remove("active");
+            }
+            
+            // Remove active class from all tab buttons
+            var tabButtons = document.getElementsByClassName("tab-btn");
+            for (var i = 0; i < tabButtons.length; i++) {
+                tabButtons[i].classList.remove("active");
+            }
+            
+            // Show the selected tab content and mark button as active
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+        
+        // Load resources by type
+        function loadResources(resourceType) {
+            // Mark the selected resource tab as active
+            var resourceTabs = document.getElementsByClassName("resource-tab-btn");
+            for (var i = 0; i < resourceTabs.length; i++) {
+                resourceTabs[i].classList.remove("active");
+                if (resourceTabs[i].getAttribute("onclick").includes(resourceType)) {
+                    resourceTabs[i].classList.add("active");
+                }
+            }
+            
+            // Fetch resource files
+            fetch(`/api/resources/${resourceType}/{{ job_id }}`)
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Failed to load resources');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    const resourceContent = document.getElementById('resourceContent');
+                    
+                    if (!data.files || data.files.length === 0) {
+                        resourceContent.innerHTML = `<p class="empty-message">No ${resourceType} files found in this archive.</p>`;
+                        return;
+                    }
+                    
+                    let html = `<div class="file-list"><ul class="resource-list">`;
+                    
+                    // For images, show thumbnails
+                    if (resourceType === 'images') {
+                        html = `<div class="image-grid">`;
+                        data.files.forEach(file => {
+                            html += `
+                                <div class="image-item">
+                                    <a href="/job/{{ job_id }}/${resourceType}/${file}" target="_blank">
+                                        <img src="/job/{{ job_id }}/${resourceType}/${file}" alt="${file}">
+                                        <div class="image-name">${file}</div>
+                                    </a>
+                                </div>
+                            `;
+                        });
+                        html += `</div>`;
+                    } else {
+                        // For other resources, show as list
+                        data.files.forEach(file => {
+                            html += `<li><a href="/job/{{ job_id }}/${resourceType}/${file}" target="_blank">${file}</a></li>`;
+                        });
+                        html += `</ul></div>`;
+                    }
+                    
+                    resourceContent.innerHTML = html;
+                })
+                .catch(error => {
+                    document.getElementById('resourceContent').innerHTML = 
+                        `<p class="error-message">Error loading resources: ${error.message}</p>`;
+                });
+        }
+        
+        // Download the archive
+        function downloadArchive() {
+            alert("Download functionality will be implemented in a future update.");
+        }
+        
+        // Delete the archive with confirmation
+        function deleteArchive() {
+            if (confirm("Are you sure you want to delete this archive? This action cannot be undone.")) {
+                fetch(`/api/clean_job/{{ job_id }}`, {
+                    method: 'POST'
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Archive deleted successfully.");
+                        window.location.href = "/";
+                    } else {
+                        alert("Error deleting archive: " + (data.error || "Unknown error"));
+                    }
+                })
+                .catch(error => {
+                    alert("Error deleting archive: " + error);
+                });
+            }
+        }
+        
+        // Load CSS resources by default when resources tab is shown
+        document.querySelector(".tab-btn[onclick*='resourcesTab']").addEventListener("click", function() {
+            setTimeout(() => {
+                loadResources('css');
+            }, 100);
+        });
+    </script>
+</body>
+</html> 

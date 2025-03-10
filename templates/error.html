@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crawlr - Error</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
+</head>
+<body>
+    <div class="typewriter-container">
+        <h1 class="typewriter">Crawlr</h1>
+        <p class="subtitle">Error Occurred</p>
+        
+        <div class="error-panel">
+            <div class="error-icon">⚠️</div>
+            <h2>Something went wrong</h2>
+            <p class="error-message">{{ message }}</p>
+            
+            <div class="actions">
+                <a href="/" class="btn">Return to Home</a>
+            </div>
+        </div>
+        
+        {% if disclaimer %}
+        <div class="disclaimer small-disclaimer">
+            <h4>Disclaimer</h4>
+            <pre>{{ disclaimer }}</pre>
+        </div>
+        {% endif %}
+        
+        <footer class="footer">
+            <p>Crawlr - Web Archive Tool</p>
+            <p><a href="/about">About</a> | <a href="https://github.com/yourusername/crawlr" target="_blank">GitHub</a></p>
+            <p class="disclaimer-footer">For responsible use only. Please respect website owners' rights, robots.txt directives, and rate limits.</p>
+        </footer>
+    </div>
+</body>
+</html> 

@@ -1,0 +1,127 @@
+/* 
+   VibeCrawlr - Main Stylesheet
+   This file provides additional styles for the web crawler interface
+*/
+
+/* We're including the main styles directly in the HTML for faster loading,
+   but this file can be used for additional styles or overrides */
+
+/* Custom link styles */
+a {
+    color: #1a73e8;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: #174ea6;
+    text-decoration: underline;
+}
+
+/* Additional utility classes */
+.text-center {
+    text-align: center;
+}
+
+.mt-1 { margin-top: 0.5rem; }
+.mt-2 { margin-top: 1rem; }
+.mt-3 { margin-top: 1.5rem; }
+.mt-4 { margin-top: 2rem; }
+
+.mb-1 { margin-bottom: 0.5rem; }
+.mb-2 { margin-bottom: 1rem; }
+.mb-3 { margin-bottom: 1.5rem; }
+.mb-4 { margin-bottom: 2rem; }
+
+/* Footer styles */
+.footer {
+    text-align: center;
+    padding: 1rem;
+    color: #5f6368;
+    font-size: 0.875rem;
+    margin-top: 2rem;
+}
+
+/* Alert boxes */
+.alert {
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+}
+
+.alert-info {
+    background-color: #e8f0fe;
+    color: #1967d2;
+    border: 1px solid #d2e3fc;
+}
+
+.alert-success {
+    background-color: #e6f4ea;
+    color: #137333;
+    border: 1px solid #ceead6;
+}
+
+.alert-warning {
+    background-color: #fef7e0;
+    color: #b06000;
+    border: 1px solid #feefc3;
+}
+
+.alert-danger {
+    background-color: #fce8e6;
+    color: #c5221f;
+    border: 1px solid #fad2cf;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #202124;
+        color: #e8eaed;
+    }
+    
+    .card, .stat-card {
+        background-color: #2d2d2d;
+        border-color: #3c4043;
+    }
+    
+    h1, h2, h3 {
+        color: #8ab4f8;
+    }
+    
+    input[type="text"], input[type="url"] {
+        background-color: #202124;
+        border-color: #5f6368;
+        color: #e8eaed;
+    }
+    
+    input[type="text"]:focus, input[type="url"]:focus {
+        border-color: #8ab4f8;
+    }
+    
+    .btn-secondary {
+        background-color: #3c4043;
+        color: #e8eaed;
+    }
+    
+    .btn-secondary:hover {
+        background-color: #5f6368;
+    }
+    
+    .status-details {
+        background-color: #202124;
+        border-color: #3c4043;
+    }
+    
+    a {
+        color: #8ab4f8;
+    }
+    
+    a:hover {
+        color: #aecbfa;
+    }
+    
+    .stat-value {
+        color: #8ab4f8;
+    }
+} 

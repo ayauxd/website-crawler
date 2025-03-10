@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crawlr - About</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
+</head>
+<body>
+    <div class="typewriter-container">
+        <h1 class="typewriter">Crawlr</h1>
+        <p class="subtitle">Web Archive Tool</p>
+        
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; About
+        </div>
+        
+        <div class="explanation-box">
+            <h2>{{ content.title }}</h2>
+            <p>{{ content.description }}</p>
+            
+            <h3>Key Features</h3>
+            <ul>
+                {% for feature in content.features %}
+                <li>{{ feature }}</li>
+                {% endfor %}
+            </ul>
+            
+            <h3>How to Use Crawlr</h3>
+            <ol>
+                {% for step in content.usage %}
+                <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+        
+        <div class="usage-instructions">
+            <h2>Using Archived Files in Your IDE</h2>
+            <p>Once you've crawled a website, you can use the archived files in your development environment:</p>
+            <ol>
+                {% for instruction in content.ide_instructions %}
+                <li>{{ instruction }}</li>
+                {% endfor %}
+            </ol>
+            
+            <h3>Tips for Developers</h3>
+            <p>The archived site can be a great starting point for your own projects:</p>
+            <ul>
+                <li>Use the HTML structure as a template for your own pages</li>
+                <li>Study the CSS to understand the styling techniques used</li>
+                <li>Examine JavaScript code to learn interactive features</li>
+                <li>Modify and extend the code to create your own version</li>
+            </ul>
+        </div>
+        
+        <div class="serverless-info">
+            <h2>About Serverless Architecture</h2>
+            <p>Crawlr uses a serverless architecture which means:</p>
+            <ul>
+                <li>The crawler runs in short bursts (10-second time limit)</li>
+                <li>Larger sites require multiple "Continue Crawl" requests</li>
+                <li>Files are stored temporarily and may be cleaned up after a period of time</li>
+                <li>For ongoing archiving, consider downloading the files</li>
+            </ul>
+        </div>
+        
+        <div class="actions">
+            <a href="/" class="btn btn-secondary">Return to Home</a>
+        </div>
+        
+        <footer class="footer">
+            <p>Crawlr - Web Archive Tool</p>
+            <p><a href="/about">About</a> | <a href="https://github.com/yourusername/crawlr" target="_blank">GitHub</a></p>
+            <p class="disclaimer-footer">For responsible use only. Please respect website owners' rights, robots.txt directives, and rate limits.</p>
+        </footer>
+    </div>
+</body>
+</html> 

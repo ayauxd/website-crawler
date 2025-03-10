@@ -1,3 +1,8 @@
+"""
+DEPRECATED: This file contains the old web interface and should not be used.
+Use serverless_api.py instead for the new interface.
+"""
+
 import os
 import json
 import shutil
@@ -25,6 +30,8 @@ completed_crawls = {}
 
 @app.route('/')
 def index():
+    print("DEBUG: web_interface_retro.py index route accessed")
+    app.logger.info("DEBUG: web_interface_retro.py index route accessed")
     # Load completed archives from the archives directory
     archives = []
     for archive_id in os.listdir(app.config['ARCHIVES_FOLDER']):

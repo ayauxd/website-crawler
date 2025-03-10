@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crawlr - IDE Usage Guide</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/retro.css') }}">
+</head>
+<body>
+    <div class="typewriter-container">
+        <h1 class="typewriter">Crawlr</h1>
+        <p class="subtitle">IDE Usage Guide</p>
+        
+        <div class="breadcrumb">
+            <a href="/">Home</a> &gt; <a href="/about">About</a> &gt; IDE Usage
+        </div>
+        
+        <div class="explanation-box">
+            <h2>{{ content.title }}</h2>
+            <p>{{ content.description }}</p>
+            
+            <h3>General Instructions</h3>
+            <ol>
+                {% for step in content.general_instructions %}
+                <li>{{ step }}</li>
+                {% endfor %}
+            </ol>
+        </div>
+        
+        <div class="usage-instructions">
+            <h2>IDE-Specific Instructions</h2>
+            
+            {% for ide in content.ides %}
+            <div class="ide-section">
+                <h3>{{ ide.name }}</h3>
+                <ol>
+                    {% for step in ide.steps %}
+                    <li>{{ step }}</li>
+                    {% endfor %}
+                </ol>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="serverless-info">
+            <h2>Pro Tips</h2>
+            <ul>
+                {% for tip in content.tips %}
+                <li>{{ tip }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        
+        <div class="code-example">
+            <h2>Example Structure</h2>
+            <pre>
+project/
+├── html/
+│   ├── index.html
+│   ├── about.html
+│   └── contact.html
+├── css/
+│   ├── style.css
+│   └── responsive.css
+├── js/
+│   └── main.js
+├── images/
+│   ├── logo.png
+│   └── background.jpg
+└── fonts/
+    └── custom-font.woff
+            </pre>
+        </div>
+        
+        <div class="actions">
+            <a href="/" class="btn btn-secondary">Return to Home</a>
+            <a href="/about" class="btn">Back to About</a>
+        </div>
+        
+        <footer class="footer">
+            <p>Crawlr - Web Archive Tool</p>
+            <p><a href="/about">About</a> | <a href="/ide-usage">IDE Usage</a> | <a href="https://github.com/yourusername/crawlr" target="_blank">GitHub</a></p>
+            <p class="disclaimer-footer">For responsible use only. Please respect website owners' rights, robots.txt directives, and rate limits.</p>
+        </footer>
+    </div>
+</body>
+</html> 

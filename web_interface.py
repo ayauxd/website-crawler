@@ -28,6 +28,8 @@ crawler_status = {
 
 @app.route('/')
 def index():
+    print("DEBUG: web_interface.py index route accessed")
+    app.logger.info("DEBUG: web_interface.py index route accessed")
     return render_template('index.html', status=crawler_status)
 
 @app.route('/start_crawl', methods=['POST'])
@@ -112,11 +114,16 @@ def monitor_process(process):
     crawler_status['running'] = False
 
 def create_templates():
-    """Create the HTML templates for the web interface"""
-    os.makedirs('templates', exist_ok=True)
+    """Create template files if they don't exist"""
+    # Comment out the entire function to prevent it from overriding our new templates
+    """
+    templates_dir = os.path.join(os.path.dirname(__file__), 'templates')
+    os.makedirs(templates_dir, exist_ok=True)
     
-    # Create index.html
-    index_html = """
+    index_path = os.path.join(templates_dir, 'index.html')
+    if not os.path.exists(index_path):
+        with open(index_path, 'w') as f:
+            f.write('''
     <!DOCTYPE html>
     <html lang="en">
     <head>
@@ -175,38 +182,69 @@ def create_templates():
             button:hover {
                 background-color: #45a049;
             }
-            .status-panel {
-                margin-top: 20px;
-                padding: 15px;
-                background-color: #f9f9f9;
-                border-radius: 4px;
-            }
-            .stats-grid {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-                gap: 10px;
-                margin-top: 15px;
-            }
-            .stat-card {
-                background-color: white;
-                padding: 10px;
-                border-radius: 4px;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            }
-            .stat-value {
-                font-size: 24px;
-                font-weight: bold;
-                color: #4CAF50;
-            }
-            .error-message {
-                color: #f44336;
-                margin-top: 15px;
+            button:disabled {
+                background-color: #cccccc;
+                cursor: not-allowed;
             }
             .button-red {
                 background-color: #f44336;
             }
             .button-red:hover {
                 background-color: #d32f2f;
+            }
+            .status-section {
+                margin-top: 30px;
+                padding-top: 20px;
+                border-top: 1px solid #eee;
+            }
+            .status-item {
+                margin-bottom: 10px;
+            }
+            .stats-container {
+                display: flex;
+                flex-wrap: wrap;
+                margin-top: 15px;
+            }
+            .stat-box {
+                background-color: #f5f5f5;
+                border-radius: 4px;
+                padding: 15px;
+                margin-right: 15px;
+                margin-bottom: 15px;
+                min-width: 120px;
+            }
+            .stat-box h3 {
+                margin-top: 0;
+                margin-bottom: 10px;
+                font-size: 14px;
+                color: #555;
+            }
+            .stat-box .value {
+                font-size: 24px;
+                font-weight: bold;
+                color: #333;
+            }
+            #status-controls {
+                display: flex;
+                align-items: center;
+                margin-top: 15px;
+            }
+            .status-label {
+                margin-right: 10px;
+                font-weight: bold;
+            }
+            .status-value {
+                padding: 5px 10px;
+                border-radius: 4px;
+                font-weight: bold;
+            }
+            .status-not-running {
+                background-color: #f44336;
+                color: white;
+            }
+            .status-running {
+                background-color: #4CAF50;
+                color: white;
             }
             .refresh-button {
                 background-color: #2196F3;
@@ -249,70 +287,98 @@ def create_templates():
                     <button type="submit" class="button-red">Stop Crawler</button>
                 </form>
                 {% endif %}
-                
-                <button type="button" id="refreshButton" class="refresh-button">Refresh Status</button>
             </form>
             
-            <div id="loading">Loading...</div>
+            <div id="loading">
+                <p>Processing... This may take a few seconds.</p>
+            </div>
             
-            <div class="status-panel">
+            <div class="status-section">
                 <h2>Crawler Status</h2>
                 
+                <div id="status-controls">
+                    <span class="status-label">Status:</span>
+                    <span class="status-value {% if status.running %}status-running{% else %}status-not-running{% endif %}" id="status-indicator">
+                        {% if status.running %}Running{% else %}Not Running{% endif %}
+                    </span>
+                    <button id="refresh-status" class="refresh-button">Refresh Status</button>
+                </div>
+                
                 {% if status.running %}
-                <p><strong>Status:</strong> <span style="color: green;">Running</span></p>
-                <p><strong>URL:</strong> {{ status.url }}</p>
-                <p><strong>Output Directory:</strong> {{ status.output_dir }}</p>
-                <p><strong>Started:</strong> {{ status.start_time }}</p>
+                <div class="status-item">
+                    <strong>URL:</strong> {{ status.url }}
+                </div>
+                <div class="status-item">
+                    <strong>Output Directory:</strong> {{ status.output_dir }}
+                </div>
+                <div class="status-item">
+                    <strong>Started:</strong> {{ status.start_time }}
+                </div>
                 
                 <h3>Statistics</h3>
-                <div class="stats-grid" id="statsGrid">
-                    {% if status.stats %}
-                        {% for category, data in status.stats.items() %}
-                            {% if category != "timing" %}
-                                {% for key, value in data.items() %}
-                                <div class="stat-card">
-                                    <div>{{ key.replace('_', ' ').title() }}</div>
-                                    <div class="stat-value">{{ value }}</div>
-                                </div>
-                                {% endfor %}
-                            {% endif %}
-                        {% endfor %}
-                    {% else %}
-                    <p>No statistics available yet.</p>
-                    {% endif %}
+                <div class="stats-container" id="stats-container">
+                    {% for key, value in status.stats.items() %}
+                    <div class="stat-box">
+                        <h3>{{ key|title }}</h3>
+                        <div class="value">{{ value }}</div>
+                    </div>
+                    {% endfor %}
                 </div>
-                {% else %}
-                <p><strong>Status:</strong> <span>Not Running</span></p>
                 {% endif %}
             </div>
         </div>
         
         <script>
-            document.getElementById('refreshButton').addEventListener('click', function() {
-                const loading = document.getElementById('loading');
-                loading.style.display = 'block';
-                
+            document.getElementById('crawlForm').addEventListener('submit', function() {
+                document.getElementById('loading').style.display = 'block';
+            });
+            
+            document.getElementById('refresh-status').addEventListener('click', function() {
                 fetch('/status')
                     .then(response => response.json())
                     .then(data => {
-                        loading.style.display = 'none';
-                        window.location.reload();
+                        // Update status indicator
+                        const statusIndicator = document.getElementById('status-indicator');
+                        statusIndicator.textContent = data.running ? 'Running' : 'Not Running';
+                        statusIndicator.className = 'status-value ' + (data.running ? 'status-running' : 'status-not-running');
+                        
+                        // If running, update the stats
+                        if (data.running) {
+                            const statsContainer = document.getElementById('stats-container');
+                            statsContainer.innerHTML = '';
+                            
+                            for (const [key, value] of Object.entries(data.stats)) {
+                                const statBox = document.createElement('div');
+                                statBox.className = 'stat-box';
+                                statBox.innerHTML = `
+                                    <h3>${key.charAt(0).toUpperCase() + key.slice(1)}</h3>
+                                    <div class="value">${value}</div>
+                                `;
+                                statsContainer.appendChild(statBox);
+                            }
+                            
+                            // Refresh the page if status changed
+                            if (statusIndicator.textContent !== (data.running ? 'Running' : 'Not Running')) {
+                                location.reload();
+                            }
+                        } else {
+                            // Refresh the page if the crawler was previously running
+                            if (statusIndicator.textContent === 'Running') {
+                                location.reload();
+                            }
+                        }
                     })
-                    .catch(error => {
-                        loading.style.display = 'none';
-                        console.error('Error:', error);
-                    });
+                    .catch(error => console.error('Error fetching status:', error));
             });
         </script>
     </body>
     </html>
+            ''')
     """
-    
-    with open('templates/index.html', 'w') as f:
-        f.write(index_html)
 
 if __name__ == '__main__':
-    create_templates()
+    # Comment out the create_templates call
+    # create_templates()
     print("Web interface starting at http://127.0.0.1:5000")
     print("Press Ctrl+C to stop the server")
     app.run(debug=True) 
