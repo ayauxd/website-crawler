@@ -1,0 +1,50 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{{ title }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+                h1 { color: #333; }
+                .stats-container { border: 1px solid #ddd; padding: 20px; border-radius: 4px; }
+                .stat-item { display: flex; margin: 10px 0; }
+                .stat-label { font-weight: bold; width: 200px; }
+                .nav { margin-bottom: 20px; }
+                .nav a { margin-right: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>{{ title }}</h1>
+            
+            <div class="nav">
+                <a href="/">Pages</a>
+                <a href="/stats">Statistics</a>
+                <a href="/images">Images</a>
+                <a href="/resources">Resources</a>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-label">Pages Crawled:</div>
+                    <div class="stat-value">{{ stats.pages_crawled }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Links Found:</div>
+                    <div class="stat-value">{{ stats.links_found }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Images Found:</div>
+                    <div class="stat-value">{{ stats.images_found }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Resources Downloaded:</div>
+                    <div class="stat-value">{{ stats.resources_downloaded }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Bytes Downloaded:</div>
+                    <div class="stat-value">{{ stats.bytes_downloaded }} bytes ({{ stats.bytes_downloaded // 1024 }} KB)</div>
+                </div>
+            </div>
+        </body>
+        </html>
+        

@@ -20,11 +20,13 @@ from typing import Dict, List, Set, Any, Optional, Tuple, Union
 from urllib.parse import urlparse, urlunparse, urljoin, parse_qs, urlencode
 from datetime import datetime, timedelta
 import validators
+from bs4 import BeautifulSoup
+import asyncio
 
 logger = logging.getLogger(__name__)
 
 # URL UTILITIES
-def normalize_url(url: str) -> str:
+def normalize_url(url: str, base_url=None) -> str:
     """
     Normalize a URL to avoid crawling duplicates.
     
@@ -128,7 +130,6 @@ def is_subpath(base_url: str, url: str) -> bool:
 # CONTENT UTILITIES
 def extract_text_from_html(html: str) -> str:
     """Extract readable text from HTML content."""
-    from bs4 import BeautifulSoup
     soup = BeautifulSoup(html, 'html.parser')
     
     # Remove script and style elements
@@ -310,8 +311,6 @@ class RateLimiter:
         
         Returns the number of seconds waited.
         """
-        import asyncio
-        
         current_time = time.time()
         wait_time = 0
         
@@ -358,20 +357,16 @@ class CrawlerDashboard:
     
     def start(self):
         """Start the dashboard in a separate thread."""
-        import threading
-        
         self.running = True
-        self.thread = threading.Thread(target=self._run_dashboard)
-        self.thread.daemon = True
-        self.thread.start()
+        self.thread = asyncio.create_task(self._run_dashboard())
     
-    def stop(self):
+    async def stop(self):
         """Stop the dashboard."""
         self.running = False
-        if hasattr(self, 'thread'):
-            self.thread.join(timeout=1)
+        if self.thread:
+            await self.thread
     
-    def _run_dashboard(self):
+    async def _run_dashboard(self):
         """Run the dashboard loop."""
         try:
             import os
@@ -416,10 +411,152 @@ class CrawlerDashboard:
                 print("=" * 50)
                 
                 # Sleep before next update
-                time.sleep(self.update_interval)
+                await asyncio.sleep(self.update_interval)
                 
         except Exception as e:
             logger.error(f"Dashboard error: {str(e)}")
+
+class ResourceExtractor:
+    """Extracts and categorizes resources from HTML content."""
+    
+    def __init__(self, base_url, output_dir):
+        self.base_url = base_url
+        self.output_dir = output_dir
+        self.css_dir = os.path.join(output_dir, "css")
+        self.js_dir = os.path.join(output_dir, "js")
+        self.fonts_dir = os.path.join(output_dir, "fonts")
+        os.makedirs(self.css_dir, exist_ok=True)
+        os.makedirs(self.js_dir, exist_ok=True)
+        os.makedirs(self.fonts_dir, exist_ok=True)
+        
+    def extract_stylesheets(self, html_content, page_url):
+        """Extract all CSS stylesheets from HTML content."""
+        soup = BeautifulSoup(html_content, 'html.parser')
+        stylesheets = []
+        
+        # Find all external CSS files
+        for link in soup.find_all('link', rel='stylesheet'):
+            if 'href' in link.attrs:
+                css_url = normalize_url(link['href'], page_url)
+                if css_url:
+                    stylesheets.append(css_url)
+                    
+        # Find all inline styles and save them
+        for style in soup.find_all('style'):
+            # Handle inline styles if needed
+            pass
+            
+        return stylesheets
+        
+    def extract_scripts(self, html_content, page_url):
+        """Extract all JavaScript files from HTML content."""
+        soup = BeautifulSoup(html_content, 'html.parser')
+        scripts = []
+        
+        for script in soup.find_all('script', src=True):
+            js_url = normalize_url(script['src'], page_url)
+            if js_url:
+                scripts.append(js_url)
+                
+        return scripts
+        
+    async def download_resource(self, url, output_path, session):
+        """Download a resource and save it to the specified path."""
+        try:
+            async with session.get(url, allow_redirects=True) as response:
+                if response.status == 200:
+                    content = await response.read()
+                    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                    with open(output_path, 'wb') as f:
+                        f.write(content)
+                    return True, url, len(content)
+                else:
+                    logging.warning(f"Failed to download {url}: HTTP {response.status}")
+                    return False, url, 0
+        except Exception as e:
+            logging.error(f"Error downloading {url}: {e}")
+            return False, url, 0
+            
+    def get_local_path(self, url, resource_type):
+        """Generate a local path for a downloaded resource."""
+        parsed = urlparse(url)
+        filename = os.path.basename(parsed.path)
+        if not filename:
+            filename = f"resource_{hash(url)}"
+            
+        if resource_type == 'css':
+            return os.path.join(self.css_dir, filename)
+        elif resource_type == 'js':
+            return os.path.join(self.js_dir, filename)
+        elif resource_type == 'font':
+            return os.path.join(self.fonts_dir, filename)
+        else:
+            return None
+
+    def extract_fonts_from_css(self, css_content, css_url):
+        """Extract font URLs from CSS content."""
+        fonts = []
+        
+        # Pattern for font-face src URLs
+        import re
+        
+        # Find all font URLs in the CSS
+        # Match url() patterns in font-face declarations
+        font_face_pattern = re.compile(r'@font-face\s*{[^}]*?src\s*:\s*[^;]*?url\(([^)]+)\)[^}]*?}', re.DOTALL)
+        url_pattern = re.compile(r'url\([\'"]*([^\'"]+)[\'"]?\)', re.DOTALL)
+        
+        # First look for font-face declarations
+        for font_face in font_face_pattern.findall(css_content):
+            # Then extract URLs from the font-face src attribute
+            for url_match in url_pattern.findall(font_face):
+                font_url = normalize_url(url_match, css_url)
+                if font_url:
+                    fonts.append(font_url)
+        
+        # Also look for any URL that seems to be a font file
+        for url_match in url_pattern.findall(css_content):
+            if any(ext in url_match.lower() for ext in ['.woff', '.woff2', '.ttf', '.eot', '.otf']):
+                font_url = normalize_url(url_match, css_url)
+                if font_url and font_url not in fonts:
+                    fonts.append(font_url)
+        
+        return fonts
+
+    async def process_css_for_fonts(self, css_url, css_local_path, session):
+        """Download a CSS file and extract any fonts referenced within it."""
+        try:
+            # Download the CSS file
+            success, _, css_size = await self.download_resource(css_url, css_local_path, session)
+            
+            if success:
+                # Read the CSS content
+                with open(css_local_path, 'r', encoding='utf-8', errors='ignore') as f:
+                    css_content = f.read()
+                
+                # Extract font URLs
+                fonts = self.extract_fonts_from_css(css_content, css_url)
+                
+                # Download each font
+                font_downloads = []
+                for font_url in fonts:
+                    font_local_path = self.get_local_path(font_url, 'font')
+                    if font_local_path:
+                        font_downloads.append(self.download_resource(font_url, font_local_path, session))
+                
+                # Wait for all downloads to complete
+                if font_downloads:
+                    font_results = await asyncio.gather(*font_downloads, return_exceptions=True)
+                    return fonts, font_results
+                
+            return [], []
+        except Exception as e:
+            logging.error(f"Error processing CSS for fonts: {e}")
+            return [], []
+
+def extract_domain(url):
+    """Extract domain from a URL."""
+    parsed = urlparse(url)
+    return parsed.netloc
 
 # Export most useful functions at module level
 __all__ = [
@@ -433,5 +570,6 @@ __all__ = [
     'generate_filename_from_url',
     'CrawlerStats',
     'RateLimiter',
-    'CrawlerDashboard'
+    'CrawlerDashboard',
+    'ResourceExtractor'
 ]

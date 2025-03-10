@@ -7,7 +7,7 @@ A simple Flask app to view the crawled content from the Teller website.
 
 import os
 import json
-from flask import Flask, render_template_string, send_from_directory, redirect
+from flask import Flask, render_template, abort, send_from_directory, redirect, url_for
 
 app = Flask(__name__)
 
@@ -16,475 +16,375 @@ OUTPUT_DIR = "./teller_output"
 
 @app.route('/')
 def index():
-    """Display the main index page with links to pages and images."""
-    template = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Teller Website Crawler Results</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 20px;
-                background-color: #f5f5f5;
-                color: #333;
-            }
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                background-color: white;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            }
-            h1, h2, h3 {
-                color: #333;
-            }
-            .header {
-                border-bottom: 2px solid #eee;
-                padding-bottom: 20px;
-                margin-bottom: 20px;
-            }
-            .stats {
-                margin-bottom: 30px;
-                padding: 15px;
-                background-color: #f9f9f9;
-                border-radius: 8px;
-            }
-            .nav-buttons {
-                display: flex;
-                gap: 15px;
-                margin-top: 20px;
-            }
-            .btn {
-                display: inline-block;
-                padding: 12px 20px;
-                background-color: #4a6cf7;
-                color: white;
-                text-decoration: none;
-                border-radius: 6px;
-                transition: background-color 0.3s;
-                font-weight: bold;
-            }
-            .btn:hover {
-                background-color: #3a56d8;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1>Teller Website Crawler Results</h1>
-                <p>This viewer displays content crawled from <a href="https://weareteller.webflow.io/" target="_blank">https://weareteller.webflow.io/</a></p>
-            </div>
-            
-            <div class="stats">
-                <h2>Crawl Statistics</h2>
-                {% if stats %}
-                <p><strong>Pages Crawled:</strong> {{ stats.pages_crawled }}</p>
-                <p><strong>Links Found:</strong> {{ stats.links_found }}</p>
-                <p><strong>Images Found:</strong> {{ stats.images_found }}</p>
-                <p><strong>Start Time:</strong> {{ stats.start_time }}</p>
-                <p><strong>End Time:</strong> {{ stats.end_time or 'In Progress...' }}</p>
-                {% else %}
-                <p>No statistics available. Have you run the crawler yet?</p>
-                {% endif %}
-            </div>
-            
-            <div class="nav-buttons">
-                <a href="/pages" class="btn">Browse Pages</a>
-                <a href="/images" class="btn">View Images</a>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
-    
-    # Get stats if available
-    stats = None
-    stats_file = os.path.join(OUTPUT_DIR, 'stats', 'crawler_stats.json')
-    if os.path.exists(stats_file):
-        with open(stats_file, 'r') as f:
-            stats = json.load(f)
-    
-    return render_template_string(template, stats=stats)
-
-@app.route('/pages')
-def pages():
-    """Display a list of all crawled pages with links."""
+    """Display the list of crawled pages."""
     html_dir = os.path.join(OUTPUT_DIR, 'html')
+    
     if not os.path.exists(html_dir):
-        return "No crawled content found. Please run the crawler first."
+        return "No crawled pages found. Run teller_crawler.py first."
     
-    html_files = os.listdir(html_dir)
-    html_files = [f for f in html_files if f.endswith('.html')]
-    html_files.sort()
-    
-    template = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Teller Website - Crawled Pages</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 20px;
-                background-color: #f5f5f5;
-                color: #333;
-            }
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                background-color: white;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            }
-            h1, h2, h3 {
-                color: #333;
-            }
-            .header {
-                border-bottom: 2px solid #eee;
-                padding-bottom: 20px;
-                margin-bottom: 20px;
-            }
-            .page-list {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-                gap: 15px;
-                margin-top: 20px;
-            }
-            .page-item {
-                background-color: #f9f9f9;
-                border-radius: 6px;
-                padding: 15px;
-                transition: transform 0.2s, box-shadow 0.2s;
-            }
-            .page-item:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            }
-            .page-item a {
-                color: #4a6cf7;
-                text-decoration: none;
-                font-weight: bold;
-                display: block;
-                word-break: break-word;
-            }
-            .page-item a:hover {
-                text-decoration: underline;
-            }
-            .nav-buttons {
-                margin-top: 30px;
-            }
-            .btn {
-                display: inline-block;
-                padding: 12px 20px;
-                background-color: #4a6cf7;
-                color: white;
-                text-decoration: none;
-                border-radius: 6px;
-                transition: background-color 0.3s;
-                font-weight: bold;
-            }
-            .btn:hover {
-                background-color: #3a56d8;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1>Teller Website - Crawled Pages</h1>
-                <p>Showing {{ html_files|length }} crawled pages</p>
-            </div>
+    pages = []
+    for filename in os.listdir(html_dir):
+        if filename.endswith('.html'):
+            file_path = os.path.join(html_dir, filename)
+            url_path = '/' + filename
             
-            <div class="page-list">
-                {% for file in html_files %}
-                <div class="page-item">
-                    <a href="/view/{{ file }}">{{ file }}</a>
-                </div>
-                {% endfor %}
-            </div>
+            # Get file size
+            size = os.path.getsize(file_path)
+            size_str = f"{size / 1024:.1f} KB"
             
-            <div class="nav-buttons">
-                <a href="/" class="btn">Back to Home</a>
-                <a href="/images" class="btn">View Images</a>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+            pages.append({
+                'filename': filename,
+                'url': url_path,
+                'size': size_str
+            })
     
-    return render_template_string(template, html_files=html_files)
+    # Sort pages by filename
+    pages.sort(key=lambda x: x['filename'])
+    
+    return render_template('teller_pages_list.html', pages=pages, title="Teller Website Results")
 
-@app.route('/images')
-def images():
-    """Display an image gallery of all downloaded images."""
-    images_dir = os.path.join(OUTPUT_DIR, 'images')
-    if not os.path.exists(images_dir):
-        return "No images found. Please run the crawler with image downloading."
-    
-    image_files = []
-    for file in os.listdir(images_dir):
-        if file.lower().endswith(('.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp')):
-            image_files.append(file)
-    
-    image_files.sort()
-    
-    # Get image stats if available
-    stats = None
-    stats_file = os.path.join(OUTPUT_DIR, 'stats', 'image_stats.json')
-    if os.path.exists(stats_file):
-        with open(stats_file, 'r') as f:
-            stats = json.load(f)
-    
-    template = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Teller Website - Images</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 20px;
-                background-color: #f5f5f5;
-                color: #333;
-            }
-            .container {
-                max-width: 1200px;
-                margin: 0 auto;
-                background-color: white;
-                padding: 20px;
-                border-radius: 8px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            }
-            h1, h2, h3 {
-                color: #333;
-            }
-            .header {
-                border-bottom: 2px solid #eee;
-                padding-bottom: 20px;
-                margin-bottom: 20px;
-            }
-            .stats {
-                margin-bottom: 20px;
-                padding: 15px;
-                background-color: #f9f9f9;
-                border-radius: 8px;
-            }
-            .gallery {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 20px;
-                margin-top: 20px;
-            }
-            .gallery-item {
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                overflow: hidden;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-                transition: transform 0.3s ease;
-                background-color: #fff;
-            }
-            .gallery-item:hover {
-                transform: scale(1.03);
-                box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            }
-            .gallery-item img {
-                width: 100%;
-                height: 200px;
-                object-fit: contain;
-                background-color: #f9f9f9;
-                border-bottom: 1px solid #eee;
-                padding: 10px;
-                box-sizing: border-box;
-                cursor: pointer;
-            }
-            .gallery-item.svg-item img {
-                padding: 20px;
-            }
-            .image-info {
-                padding: 10px 15px;
-            }
-            .image-info h3 {
-                margin: 0 0 5px 0;
-                font-size: 14px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-            .image-info p {
-                margin: 5px 0 0;
-                font-size: 12px;
-                color: #777;
-            }
-            .nav-buttons {
-                margin-top: 30px;
-            }
-            .btn {
-                display: inline-block;
-                padding: 12px 20px;
-                background-color: #4a6cf7;
-                color: white;
-                text-decoration: none;
-                border-radius: 6px;
-                transition: background-color 0.3s;
-                font-weight: bold;
-            }
-            .btn:hover {
-                background-color: #3a56d8;
-            }
-            .modal {
-                display: none;
-                position: fixed;
-                z-index: 1000;
-                left: 0;
-                top: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(0,0,0,0.8);
-            }
-            .modal-content {
-                display: block;
-                margin: auto;
-                max-width: 90%;
-                max-height: 90%;
-                padding: 20px 0;
-                position: relative;
-                top: 50%;
-                transform: translateY(-50%);
-            }
-            .modal-content img {
-                display: block;
-                margin: auto;
-                max-width: 100%;
-                max-height: 80vh;
-                border: 2px solid white;
-            }
-            .modal-caption {
-                text-align: center;
-                color: white;
-                padding: 10px;
-                font-size: 16px;
-            }
-            .close {
-                position: absolute;
-                top: 15px;
-                right: 20px;
-                color: white;
-                font-size: 40px;
-                font-weight: bold;
-                cursor: pointer;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="header">
-                <h1>Teller Website - Images</h1>
-                <p>Showing {{ image_files|length }} downloaded images</p>
-            </div>
-            
-            {% if stats %}
-            <div class="stats">
-                <h2>Image Statistics</h2>
-                <p><strong>Images Found:</strong> {{ stats.images_found }}</p>
-                <p><strong>Images Downloaded:</strong> {{ stats.images_downloaded }}</p>
-                <p><strong>Total Download Size:</strong> {{ stats.bytes_downloaded }} bytes ({{ stats.bytes_downloaded / 1024 | int }} KB)</p>
-            </div>
-            {% endif %}
-            
-            {% if image_files %}
-            <div class="gallery">
-                {% for image in image_files %}
-                <div class="gallery-item {% if image.endswith('.svg') %}svg-item{% endif %}" onclick="openModal('{{ image }}')">
-                    <img src="/image-file/{{ image }}" alt="{{ image }}">
-                    <div class="image-info">
-                        <h3>{{ image }}</h3>
-                        <p>Click to view larger</p>
-                    </div>
-                </div>
-                {% endfor %}
-            </div>
-            {% else %}
-            <p>No images found. Make sure you've run the crawler with image downloading enabled.</p>
-            {% endif %}
-            
-            <div class="nav-buttons">
-                <a href="/" class="btn">Back to Home</a>
-                <a href="/pages" class="btn">Browse Pages</a>
-            </div>
-        </div>
+@app.route('/<path:filename>')
+def serve_html(filename):
+    """Serve an HTML file."""
+    if not filename.endswith('.html'):
+        filename += '.html'
         
-        <!-- Modal for larger image view -->
-        <div id="imageModal" class="modal">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <div class="modal-content">
-                <img id="modalImage" src="">
-                <div id="modalCaption" class="modal-caption"></div>
-            </div>
-        </div>
-        
-        <script>
-            function openModal(imageName) {
-                document.getElementById('imageModal').style.display = 'block';
-                document.getElementById('modalImage').src = '/image-file/' + imageName;
-                document.getElementById('modalCaption').innerHTML = imageName;
-            }
-            
-            function closeModal() {
-                document.getElementById('imageModal').style.display = 'none';
-            }
-            
-            // Close modal when clicking outside the image
-            window.onclick = function(event) {
-                const modal = document.getElementById('imageModal');
-                if (event.target == modal) {
-                    closeModal();
-                }
-            }
-            
-            // Close modal with Escape key
-            document.addEventListener('keydown', function(event) {
-                if (event.key === 'Escape') {
-                    closeModal();
-                }
-            });
-        </script>
-    </body>
-    </html>
-    """
-    
-    return render_template_string(template, image_files=image_files, stats=stats)
-
-@app.route('/view/<filename>')
-def view_page(filename):
-    """View a specific crawled page."""
     html_dir = os.path.join(OUTPUT_DIR, 'html')
-    # Ensure the requested file exists
-    if not os.path.exists(os.path.join(html_dir, filename)):
-        return redirect('/pages')
-    
-    # Serve the file
     return send_from_directory(html_dir, filename)
 
-@app.route('/image-file/<filename>')
-def image_file(filename):
+@app.route('/css/<path:filename>')
+def serve_css(filename):
+    """Serve a CSS file."""
+    css_dir = os.path.join(OUTPUT_DIR, 'css')
+    return send_from_directory(css_dir, filename)
+
+@app.route('/js/<path:filename>')
+def serve_js(filename):
+    """Serve a JavaScript file."""
+    js_dir = os.path.join(OUTPUT_DIR, 'js')
+    return send_from_directory(js_dir, filename)
+
+@app.route('/fonts/<path:filename>')
+def serve_font(filename):
+    """Serve a font file."""
+    fonts_dir = os.path.join(OUTPUT_DIR, 'fonts')
+    return send_from_directory(fonts_dir, filename)
+
+@app.route('/images')
+def image_list():
+    """Display a list of all downloaded images."""
+    images_dir = os.path.join(OUTPUT_DIR, 'images')
+    
+    if not os.path.exists(images_dir):
+        return "No images found. Run teller_crawler.py first."
+    
+    images = []
+    for filename in os.listdir(images_dir):
+        file_path = os.path.join(images_dir, filename)
+        url_path = '/image-file/' + filename
+        
+        # Get file size
+        size = os.path.getsize(file_path)
+        size_str = f"{size / 1024:.1f} KB"
+        
+        images.append({
+            'filename': filename,
+            'url': url_path,
+            'size': size_str
+        })
+    
+    # Sort images by filename
+    images.sort(key=lambda x: x['filename'])
+    
+    return render_template('teller_images_list.html', images=images, title="Teller Website Images")
+
+@app.route('/image-file/<path:filename>')
+def serve_image(filename):
     """Serve an image file."""
     images_dir = os.path.join(OUTPUT_DIR, 'images')
     return send_from_directory(images_dir, filename)
 
+@app.route('/stats')
+def show_stats():
+    """Display crawling statistics."""
+    stats_file = os.path.join(OUTPUT_DIR, 'stats', 'crawler_stats.json')
+    
+    if not os.path.exists(stats_file):
+        return "No stats found. Run teller_crawler.py first."
+    
+    with open(stats_file, 'r') as f:
+        stats = json.load(f)
+    
+    return render_template('teller_stats.html', stats=stats, title="Teller Crawler Statistics")
+
+@app.route('/resources')
+def show_resources():
+    """Display a list of downloaded CSS, JS, and font resources."""
+    css_dir = os.path.join(OUTPUT_DIR, 'css')
+    js_dir = os.path.join(OUTPUT_DIR, 'js')
+    fonts_dir = os.path.join(OUTPUT_DIR, 'fonts')
+    
+    resources = {
+        'css': [],
+        'js': [],
+        'fonts': []
+    }
+    
+    # Get CSS files
+    if os.path.exists(css_dir):
+        for filename in os.listdir(css_dir):
+            file_path = os.path.join(css_dir, filename)
+            url_path = '/css/' + filename
+            size = os.path.getsize(file_path)
+            size_str = f"{size / 1024:.1f} KB"
+            resources['css'].append({
+                'filename': filename,
+                'url': url_path,
+                'size': size_str
+            })
+    
+    # Get JS files
+    if os.path.exists(js_dir):
+        for filename in os.listdir(js_dir):
+            file_path = os.path.join(js_dir, filename)
+            url_path = '/js/' + filename
+            size = os.path.getsize(file_path)
+            size_str = f"{size / 1024:.1f} KB"
+            resources['js'].append({
+                'filename': filename,
+                'url': url_path,
+                'size': size_str
+            })
+    
+    # Get font files
+    if os.path.exists(fonts_dir):
+        for filename in os.listdir(fonts_dir):
+            file_path = os.path.join(fonts_dir, filename)
+            url_path = '/fonts/' + filename
+            size = os.path.getsize(file_path)
+            size_str = f"{size / 1024:.1f} KB"
+            resources['fonts'].append({
+                'filename': filename,
+                'url': url_path,
+                'size': size_str
+            })
+    
+    # Sort all resource lists by filename
+    resources['css'].sort(key=lambda x: x['filename'])
+    resources['js'].sort(key=lambda x: x['filename'])
+    resources['fonts'].sort(key=lambda x: x['filename'])
+    
+    return render_template('teller_resources.html', resources=resources, title="Teller Website Resources")
+
 if __name__ == '__main__':
-    print("Teller Website Results Viewer starting at http://127.0.0.1:5003")
-    print("Press Ctrl+C to stop the server")
+    # Create templates directory if it doesn't exist
+    os.makedirs('templates', exist_ok=True)
+    
+    # Create template files if they don't exist
+    with open('templates/teller_pages_list.html', 'w') as f:
+        f.write('''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{{ title }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+                h1 { color: #333; }
+                .page-list { list-style: none; padding: 0; }
+                .page-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+                .page-link { color: #0066cc; text-decoration: none; font-weight: bold; }
+                .page-info { color: #666; font-size: 0.9em; }
+                .nav { margin-bottom: 20px; }
+                .nav a { margin-right: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>{{ title }}</h1>
+            
+            <div class="nav">
+                <a href="/">Pages</a>
+                <a href="/stats">Statistics</a>
+                <a href="/images">Images</a>
+                <a href="/resources">Resources</a>
+            </div>
+            
+            <h2>Crawled Pages</h2>
+            <p>Click on a page to view it:</p>
+            
+            <ul class="page-list">
+                {% for page in pages %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ page.url }}">{{ page.filename }}</a>
+                    <div class="page-info">Size: {{ page.size }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+        </body>
+        </html>
+        ''')
+    
+    with open('templates/teller_stats.html', 'w') as f:
+        f.write('''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{{ title }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+                h1 { color: #333; }
+                .stats-container { border: 1px solid #ddd; padding: 20px; border-radius: 4px; }
+                .stat-item { display: flex; margin: 10px 0; }
+                .stat-label { font-weight: bold; width: 200px; }
+                .nav { margin-bottom: 20px; }
+                .nav a { margin-right: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>{{ title }}</h1>
+            
+            <div class="nav">
+                <a href="/">Pages</a>
+                <a href="/stats">Statistics</a>
+                <a href="/images">Images</a>
+                <a href="/resources">Resources</a>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-label">Pages Crawled:</div>
+                    <div class="stat-value">{{ stats.pages_crawled }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Links Found:</div>
+                    <div class="stat-value">{{ stats.links_found }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Images Found:</div>
+                    <div class="stat-value">{{ stats.images_found }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Resources Downloaded:</div>
+                    <div class="stat-value">{{ stats.resources_downloaded }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Bytes Downloaded:</div>
+                    <div class="stat-value">{{ stats.bytes_downloaded }} bytes ({{ stats.bytes_downloaded // 1024 }} KB)</div>
+                </div>
+            </div>
+        </body>
+        </html>
+        ''')
+    
+    with open('templates/teller_images_list.html', 'w') as f:
+        f.write('''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{{ title }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+                h1 { color: #333; }
+                .image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+                .image-item { border: 1px solid #ddd; border-radius: 4px; padding: 10px; text-align: center; }
+                .image-preview { width: 100%; height: 150px; object-fit: contain; margin-bottom: 10px; }
+                .image-name { font-size: 0.8em; word-break: break-all; }
+                .image-info { font-size: 0.7em; color: #666; }
+                .nav { margin-bottom: 20px; }
+                .nav a { margin-right: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>{{ title }}</h1>
+            
+            <div class="nav">
+                <a href="/">Pages</a>
+                <a href="/stats">Statistics</a>
+                <a href="/images">Images</a>
+                <a href="/resources">Resources</a>
+            </div>
+            
+            <h2>Downloaded Images ({{ images|length }})</h2>
+            
+            <div class="image-grid">
+                {% for image in images %}
+                <div class="image-item">
+                    <img class="image-preview" src="{{ image.url }}" alt="{{ image.filename }}">
+                    <div class="image-name">{{ image.filename }}</div>
+                    <div class="image-info">Size: {{ image.size }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </body>
+        </html>
+        ''')
+    
+    with open('templates/teller_resources.html', 'w') as f:
+        f.write('''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{{ title }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+                h1, h2 { color: #333; }
+                .resource-section { margin-bottom: 30px; }
+                .resource-list { list-style: none; padding: 0; }
+                .resource-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+                .resource-link { color: #0066cc; text-decoration: none; font-weight: bold; }
+                .resource-info { color: #666; font-size: 0.9em; }
+                .nav { margin-bottom: 20px; }
+                .nav a { margin-right: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>{{ title }}</h1>
+            
+            <div class="nav">
+                <a href="/">Pages</a>
+                <a href="/stats">Statistics</a>
+                <a href="/images">Images</a>
+                <a href="/resources">Resources</a>
+            </div>
+            
+            <div class="resource-section">
+                <h2>CSS Files ({{ resources.css|length }})</h2>
+                <ul class="resource-list">
+                    {% for resource in resources.css %}
+                    <li class="resource-item">
+                        <a class="resource-link" href="{{ resource.url }}">{{ resource.filename }}</a>
+                        <div class="resource-info">Size: {{ resource.size }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <div class="resource-section">
+                <h2>JavaScript Files ({{ resources.js|length }})</h2>
+                <ul class="resource-list">
+                    {% for resource in resources.js %}
+                    <li class="resource-item">
+                        <a class="resource-link" href="{{ resource.url }}">{{ resource.filename }}</a>
+                        <div class="resource-info">Size: {{ resource.size }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            
+            <div class="resource-section">
+                <h2>Font Files ({{ resources.fonts|length }})</h2>
+                <ul class="resource-list">
+                    {% for resource in resources.fonts %}
+                    <li class="resource-item">
+                        <a class="resource-link" href="{{ resource.url }}">{{ resource.filename }}</a>
+                        <div class="resource-info">Size: {{ resource.size }}</div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </body>
+        </html>
+        ''')
+    
+    print(f"Teller Website Results Viewer starting at http://127.0.0.1:5003")
+    print(f"Press Ctrl+C to stop the server")
     app.run(debug=True, port=5003) 

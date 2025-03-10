@@ -1,0 +1,41 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{{ title }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+                h1 { color: #333; }
+                .image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 20px; }
+                .image-item { border: 1px solid #ddd; border-radius: 4px; padding: 10px; text-align: center; }
+                .image-preview { width: 100%; height: 150px; object-fit: contain; margin-bottom: 10px; }
+                .image-name { font-size: 0.8em; word-break: break-all; }
+                .image-info { font-size: 0.7em; color: #666; }
+                .nav { margin-bottom: 20px; }
+                .nav a { margin-right: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>{{ title }}</h1>
+            
+            <div class="nav">
+                <a href="/">Pages</a>
+                <a href="/stats">Statistics</a>
+                <a href="/images">Images</a>
+                <a href="/resources">Resources</a>
+            </div>
+            
+            <h2>Downloaded Images ({{ images|length }})</h2>
+            
+            <div class="image-grid">
+                {% for image in images %}
+                <div class="image-item">
+                    <img class="image-preview" src="{{ image.url }}" alt="{{ image.filename }}">
+                    <div class="image-name">{{ image.filename }}</div>
+                    <div class="image-info">Size: {{ image.size }}</div>
+                </div>
+                {% endfor %}
+            </div>
+        </body>
+        </html>
+        

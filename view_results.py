@@ -7,7 +7,7 @@ A simple Flask app to view the crawled content from the Mac template website.
 
 import os
 import json
-from flask import Flask, render_template_string, send_from_directory, redirect
+from flask import Flask, render_template, abort, send_from_directory, redirect, url_for
 
 app = Flask(__name__)
 
@@ -16,130 +16,176 @@ OUTPUT_DIR = "./mac_template_output"
 
 @app.route('/')
 def index():
-    """Display a list of all crawled pages with links."""
+    """Display the list of crawled pages."""
     html_dir = os.path.join(OUTPUT_DIR, 'html')
+    
     if not os.path.exists(html_dir):
-        return "No crawled content found. Please run the crawler first."
+        return "No crawled pages found. Run simple_crawler.py first."
     
-    html_files = os.listdir(html_dir)
-    html_files = [f for f in html_files if f.endswith('.html')]
-    
-    # Check for stats file
-    stats = None
-    stats_file = os.path.join(OUTPUT_DIR, 'stats', 'crawler_stats.json')
-    if os.path.exists(stats_file):
-        with open(stats_file, 'r') as f:
-            stats = json.load(f)
-    
-    template = """
-    <!DOCTYPE html>
-    <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Mac Template Crawler Results</title>
-        <style>
-            body {
-                font-family: Arial, sans-serif;
-                margin: 0;
-                padding: 20px;
-                background-color: #f5f5f5;
-            }
-            .container {
-                max-width: 1000px;
-                margin: 0 auto;
-                background-color: white;
-                padding: 20px;
-                border-radius: 5px;
-                box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            }
-            h1, h2 {
-                color: #333;
-                border-bottom: 1px solid #eee;
-                padding-bottom: 10px;
-            }
-            .page-list {
-                margin-top: 20px;
-            }
-            .page-list a {
-                display: block;
-                padding: 10px;
-                margin-bottom: 5px;
-                background-color: #f9f9f9;
-                border-radius: 4px;
-                color: #0066cc;
-                text-decoration: none;
-            }
-            .page-list a:hover {
-                background-color: #e9e9e9;
-            }
-            .stats {
-                margin-top: 20px;
-                padding: 15px;
-                background-color: #f9f9f9;
-                border-radius: 4px;
-            }
-            .refresh {
-                margin-top: 20px;
-                text-align: center;
-            }
-            .refresh a {
-                display: inline-block;
-                padding: 10px 15px;
-                background-color: #4CAF50;
-                color: white;
-                text-decoration: none;
-                border-radius: 4px;
-            }
-            .refresh a:hover {
-                background-color: #45a049;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Mac Template Crawler Results</h1>
+    pages = []
+    for filename in os.listdir(html_dir):
+        if filename.endswith('.html'):
+            file_path = os.path.join(html_dir, filename)
+            url_path = '/' + filename
             
-            {% if stats %}
-            <div class="stats">
-                <h2>Crawler Statistics</h2>
-                <p><strong>Pages Crawled:</strong> {{ stats.pages_crawled }}</p>
-                <p><strong>Links Found:</strong> {{ stats.links_found }}</p>
-                <p><strong>Images Found:</strong> {{ stats.images_found }}</p>
-                <p><strong>Start Time:</strong> {{ stats.start_time }}</p>
-                <p><strong>End Time:</strong> {{ stats.end_time or 'In Progress...' }}</p>
-            </div>
-            {% endif %}
+            # Get file size
+            size = os.path.getsize(file_path)
+            size_str = f"{size / 1024:.1f} KB"
             
-            <h2>Crawled Pages ({{ html_files|length }})</h2>
-            <div class="page-list">
-                {% for file in html_files %}
-                <a href="/view/{{ file }}">{{ file }}</a>
-                {% endfor %}
-            </div>
-            
-            <div class="refresh">
-                <a href="/">Refresh</a>
-            </div>
-        </div>
-    </body>
-    </html>
-    """
+            pages.append({
+                'filename': filename,
+                'url': url_path,
+                'size': size_str
+            })
     
-    return render_template_string(template, html_files=html_files, stats=stats)
+    # Sort pages by filename
+    pages.sort(key=lambda x: x['filename'])
+    
+    return render_template('pages_list.html', pages=pages, title="Mac Template Crawler Results")
 
-@app.route('/view/<filename>')
-def view_page(filename):
-    """View a specific crawled page."""
+@app.route('/<path:filename>')
+def serve_html(filename):
+    """Serve an HTML file."""
+    if not filename.endswith('.html'):
+        filename += '.html'
+        
     html_dir = os.path.join(OUTPUT_DIR, 'html')
-    # Ensure the requested file exists
-    if not os.path.exists(os.path.join(html_dir, filename)):
-        return redirect('/')
-    
-    # Serve the file
     return send_from_directory(html_dir, filename)
 
+@app.route('/css/<path:filename>')
+def serve_css(filename):
+    """Serve a CSS file."""
+    css_dir = os.path.join(OUTPUT_DIR, 'css')
+    return send_from_directory(css_dir, filename)
+
+@app.route('/js/<path:filename>')
+def serve_js(filename):
+    """Serve a JavaScript file."""
+    js_dir = os.path.join(OUTPUT_DIR, 'js')
+    return send_from_directory(js_dir, filename)
+
+@app.route('/fonts/<path:filename>')
+def serve_font(filename):
+    """Serve a font file."""
+    fonts_dir = os.path.join(OUTPUT_DIR, 'fonts')
+    return send_from_directory(fonts_dir, filename)
+
+@app.route('/images/<path:filename>')
+def serve_image(filename):
+    """Serve an image file."""
+    images_dir = os.path.join(OUTPUT_DIR, 'images')
+    return send_from_directory(images_dir, filename)
+
+@app.route('/stats')
+def show_stats():
+    """Display crawling statistics."""
+    stats_file = os.path.join(OUTPUT_DIR, 'stats', 'crawler_stats.json')
+    
+    if not os.path.exists(stats_file):
+        return "No stats found. Run simple_crawler.py first."
+    
+    with open(stats_file, 'r') as f:
+        stats = json.load(f)
+    
+    return render_template('stats.html', stats=stats, title="Crawler Statistics")
+
 if __name__ == '__main__':
-    print("Mac Template Crawler Results Viewer starting at http://127.0.0.1:5001")
-    print("Press Ctrl+C to stop the server")
+    # Create templates directory if it doesn't exist
+    os.makedirs('templates', exist_ok=True)
+    
+    # Create template files if they don't exist
+    with open('templates/pages_list.html', 'w') as f:
+        f.write('''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{{ title }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+                h1 { color: #333; }
+                .page-list { list-style: none; padding: 0; }
+                .page-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+                .page-link { color: #0066cc; text-decoration: none; font-weight: bold; }
+                .page-info { color: #666; font-size: 0.9em; }
+                .nav { margin-bottom: 20px; }
+                .nav a { margin-right: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>{{ title }}</h1>
+            
+            <div class="nav">
+                <a href="/">Pages</a>
+                <a href="/stats">Statistics</a>
+                <a href="/images">Images</a>
+            </div>
+            
+            <h2>Crawled Pages</h2>
+            <p>Click on a page to view it:</p>
+            
+            <ul class="page-list">
+                {% for page in pages %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ page.url }}">{{ page.filename }}</a>
+                    <div class="page-info">Size: {{ page.size }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+        </body>
+        </html>
+        ''')
+    
+    with open('templates/stats.html', 'w') as f:
+        f.write('''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{{ title }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+                h1 { color: #333; }
+                .stats-container { border: 1px solid #ddd; padding: 20px; border-radius: 4px; }
+                .stat-item { display: flex; margin: 10px 0; }
+                .stat-label { font-weight: bold; width: 200px; }
+                .nav { margin-bottom: 20px; }
+                .nav a { margin-right: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>{{ title }}</h1>
+            
+            <div class="nav">
+                <a href="/">Pages</a>
+                <a href="/stats">Statistics</a>
+                <a href="/images">Images</a>
+            </div>
+            
+            <div class="stats-container">
+                <div class="stat-item">
+                    <div class="stat-label">Pages Crawled:</div>
+                    <div class="stat-value">{{ stats.pages_crawled }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Links Found:</div>
+                    <div class="stat-value">{{ stats.links_found }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Images Found:</div>
+                    <div class="stat-value">{{ stats.images_found }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Resources Downloaded:</div>
+                    <div class="stat-value">{{ stats.resources_downloaded }}</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-label">Total Bytes Downloaded:</div>
+                    <div class="stat-value">{{ stats.bytes_downloaded }} bytes ({{ stats.bytes_downloaded // 1024 }} KB)</div>
+                </div>
+            </div>
+        </body>
+        </html>
+        ''')
+    
+    print(f"Mac Template Crawler Results Viewer starting at http://127.0.0.1:5001")
+    print(f"Press Ctrl+C to stop the server")
     app.run(debug=True, port=5001) 

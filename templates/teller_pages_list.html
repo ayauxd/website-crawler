@@ -1,0 +1,40 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>{{ title }}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 0; padding: 20px; line-height: 1.6; }
+                h1 { color: #333; }
+                .page-list { list-style: none; padding: 0; }
+                .page-item { margin: 10px 0; padding: 10px; border: 1px solid #ddd; border-radius: 4px; }
+                .page-link { color: #0066cc; text-decoration: none; font-weight: bold; }
+                .page-info { color: #666; font-size: 0.9em; }
+                .nav { margin-bottom: 20px; }
+                .nav a { margin-right: 10px; }
+            </style>
+        </head>
+        <body>
+            <h1>{{ title }}</h1>
+            
+            <div class="nav">
+                <a href="/">Pages</a>
+                <a href="/stats">Statistics</a>
+                <a href="/images">Images</a>
+                <a href="/resources">Resources</a>
+            </div>
+            
+            <h2>Crawled Pages</h2>
+            <p>Click on a page to view it:</p>
+            
+            <ul class="page-list">
+                {% for page in pages %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ page.url }}">{{ page.filename }}</a>
+                    <div class="page-info">Size: {{ page.size }}</div>
+                </li>
+                {% endfor %}
+            </ul>
+        </body>
+        </html>
+        

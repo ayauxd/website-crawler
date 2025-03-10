@@ -31,6 +31,9 @@ import xml.etree.ElementTree as ET
 from aiohttp import ClientTimeout, TCPConnector
 from aiohttp.client_exceptions import ClientError
 
+from .utils import normalize_url, extract_domain, CrawlerStats, ResourceExtractor
+from .renderer import JSRenderer
+
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -119,6 +122,14 @@ class WebsiteCrawler:
         
         # Global semaphore for concurrent requests
         self.request_semaphore = asyncio.Semaphore(self.max_concurrent_requests)
+        
+        # Initialize JS renderer if needed
+        self.js_rendering = kwargs.get('js_rendering', False)
+        if self.js_rendering:
+            self.renderer = JSRenderer()
+        
+        # Initialize resource extractor
+        self.resource_extractor = ResourceExtractor(kwargs.get('base_url', ""), kwargs.get('output_dir', "./output"))
     
     def _load_content_cache(self) -> Dict[str, Dict[str, Any]]:
         """Load content cache from disk."""
