@@ -199,7 +199,11 @@ class CrawlerStats:
                 "html_pages": 0,
                 "non_html": 0,
                 "images_found": 0,
-                "links_found": 0
+                "links_found": 0,
+                "css_found": 0,
+                "js_found": 0,
+                "fonts_found": 0,
+                "resources_downloaded": 0
             },
             "performance": {
                 "avg_request_time": 0,
@@ -213,6 +217,27 @@ class CrawlerStats:
             }
         }
         self.request_times = []
+    
+    @property
+    def pages_crawled(self):
+        """Get the number of pages crawled."""
+        return self.stats["pages"]["crawled"]
+        
+    def increment_resource_downloaded(self, resource_type=None, size=0):
+        """Increment the count of downloaded resources."""
+        self.stats["content"]["resources_downloaded"] += 1
+        self.stats["content"]["total_bytes"] += size
+        
+        if resource_type == "css":
+            self.stats["content"]["css_found"] += 1
+        elif resource_type == "js":
+            self.stats["content"]["js_found"] += 1
+        elif resource_type == "font":
+            self.stats["content"]["fonts_found"] += 1
+    
+    def to_dict(self):
+        """Convert the stats to a dictionary for JSON serialization."""
+        return self.stats
     
     def update_page_stat(self, stat_name: str, increment: int = 1):
         """Update a page-related statistic."""
